@@ -1,1 +1,1 @@
-This simple userscript can add slideshow capabilities to any site.
+This simple userscript can add slideshow capabilities to news.hobby.net.ua forum.
