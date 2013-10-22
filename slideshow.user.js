@@ -1,16 +1,16 @@
 // ==UserScript==
-// @name        Universal Slideshow
-// @version     13.3.18.0
+// @name        UMH Slideshow
+// @version     1.0.0
 // @license     MIT
-// @description Adds slideshow to large amount of sites
-// @icon        https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/Icon.png
-// @updateURL   https://raw.github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow/master/slideshow.user.js
+// @description Adds slideshow to news.hobby.net.ua forum. Forked from https://github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow.
+// @icon        https://raw.github.com/alder/umhslideshow/master/Icon.png
+// @updateURL   https://raw.github.com/alder/umhslideshow/master/slideshow.user.js
 // @include     http://*
 // @include     https://*
 // ==/UserScript==
 
 (function(scriptStorage) {
-var version = '13.3.18.0'
+var version = '1.0.0'
 
 if(typeof unsafeWindow != 'undefined') window = unsafeWindow;
 var doc = window.document;
@@ -167,215 +167,23 @@ var PROFILES = [
 		},
 		'scan': null // This is just dummy profile
 	},
-	{ //............................................................................................................AG.RU
-		'name': 'ag.ru',
-		'ajax': false,
+	{ //............................................................................................................news.hobby.net.ua forum
+		'name': 'news.hobby.net.ua',
 		'test': function() {
-			return $checkSite(/ag\.ru/, /\/games\/.*\/screenshots/, null);
+			return $checkSite(/news\.hobby\.net\.ua/);
 		},
 		'scan': function() {
-			var temp = $Q('.scrout, .scrout_new', doc);
-			for(var i = 0, n = temp.length; i < n; i++) {
-				var val = temp[i];
-				//thumbs: http://screenshots.ag.ru/ag15/geo/XXXXX/YY.jpg
-				//images: http://i.ag.ru/ag/thumbs/XXXXX/YYs.jpg
-				var thumb = $q('.screen_cont', val).style.backgroundImage;
-					thumb = thumb.substr(5, thumb.length - 7);
-				var image = thumb.replace(/i\.ag\.ru\/ag\/thumbs/i, 'screenshots.ag.ru/ag15/geo').replace(/s(?=(-\w)?\.[^(\/)]*$)/i, '');
-				var post  = $q('.thumb', val).innerHTML;
-				addSlide(image, thumb, post, val);
-			}
-			scanOver();
-		}
-	},
-	{ //............................................................................................................RMART.ORG
-		'name': 'rmart.org',
-		'ajax': false,
-		'test': function() {
-			return $checkSite(/rmart\.org/);
-		},
-		'scan': function() {
-			var temp = $Q('.thumbnail', doc);
-			var i = 0, n = temp.length;
-			if(n == 0) {
-				scanOver();
-				return;
-			}
-			var step = function() {
-				var val = temp[i],
-					img = $q('img', val),
-					url = val.href,
-					thumb = img.src,
-					post  = img.alt;
-				$getUrl(url, function(xmlhttp) {
-					var image = /<img[^<>]*?id=['"]image['"][^<]*?src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
-					addSlide(image, thumb, post, val);
-					if(++i >= n) scanOver();
-					else step();
-				});
-			};
-			step();
-		}
-	},
-	{ //............................................................................................................PIXIV.NET
-		'name': 'pixiv.net',
-		'ajax': false,
-		'test': function() {
-			return $checkSite(/pixiv\.net/);
-		},
-		'scan': function() {
-			var temp = $Q('li.image-item > a.work', doc);
-			var i = 0, n = temp.length;
-			if(n == 0) {
-				scanOver();
-				return;
-			}
-			var step = function() {
-				var val = temp[i],
-					img = $q('img', val),
-					ttl = $q('h1', val),
-					url = val.href; //.replace(/mode=medium/i, 'mode=big'),
-					thumb = img.src,
-					post  = ttl.title;
-				$getUrl(url, function(xmlhttp) {
-					var image = /<div[^<>]*?class=['"]works_display['"].*?<img[^<>]*?src=['"](.*?)['"][^<]*?>/i.exec(xmlhttp.responseText)[1];
-					addSlide(image, thumb, post, val);
-					if(++i >= n) scanOver();
-					else step();
-				});
-			};
-			step();
-		}
-	},
-	{ //............................................................................................................E621.NET
-		'name': 'e621.net',
-		'ajax': false,
-		'test': function() {
-			return $checkSite(/e621\.net/, /\/post/, /\/post\/show\//);
-		},
-		'scan': function() {
-			var temp = $Q('.tooltip-thumb', doc);
-			var i = 0, n = temp.length;
-			if(!n) {
-				scanOver();
-				return;
-			}
-			var step = function() {
-				var val = temp[i],
-					img = $q('img', val),
-					url = val.href,
-					thumb = img.dataset.original,
-					post  = img.alt;
-				$getUrl(url, function(xmlhttp) {
-					var image = /<a[^<>]*?href=['"](.*?)['"][^<]*?>Download<\/a>/i.exec(xmlhttp.responseText)[1];
-					if(!/\.swf$/i.test(image)) addSlide(image, thumb, post, val);
-					if(++i >= n) scanOver();
-					else step();
-				});
-			};
-			step();
-		}
-	},
-	{ //............................................................................................................MULTATOR.RU
-		'name': 'doodle.multator.ru',
-		'ajax': false,
-		'test': function() {
-			return $checkSite(/doodle\.multator\.ru/);
-		},
-		'scan': function() {
-			var temp = $Q('.thread_body', doc);
-			for(var i = 0, n = temp.length; i < n; i++) {
-				var val = null, image = null, post = null;
-				for (var j = 0, z = temp[i].childNodes.length; j < z; j++) {
-					val = temp[i].childNodes[j];
-					if(!post) {
-						if($hasClass(val, 'doodle_title')) {
-							post = val.innerHTML;
-						} else {
-							continue;
-						}
-					} else if($hasClass(val, 'doodle_image')) {
-						image = $q('img', val).src;
-						addSlide(image, image, post, val);
-						image = null, post = null;
-					}
-				}
-			}
-			scanOver();
-		}
-	},
-	{ //............................................................................................................IMAGEBOARDS
-		'name': 'imageboard',
-		'ajax': true,
-		'test': function() {
-			var dm = $domain(window.location.hostname);
-			var aib = {};
-			switch(dm) {
-			case '4chan.org': aib.fch = true; break;
-			case 'krautchan.net': aib.krau = true; break;
-			case 'britfa.gs': aib.brit = true; break;
-			default:
-				aib.futa = !!$q('form[action*="futaba.php"]', doc);
-				aib.tiny = !!$q('form[name*="postcontrols"]', doc);
-			}
-			var qDForm =
-				aib.brit ? '.threadz' :
-				aib.krau ? 'form[action*="delete"]' :
-				aib.tiny ? 'form[name="postcontrols"]' :
-				aib.futa ? 'form:not([enctype])' :
-				'#delform, form[name="delform"]';
-			var dForm = $q(qDForm + ', #de-panel', doc);
-			if(!dForm) {
-				return 0;
-			}
-			aib.cFileInfo =
-				aib.fch ? 'fileText' :
-				aib.krau ? 'filename' :
-				aib.brit ? 'threadlinktext' :
-				'filesize';
-			this.aib = aib;
-			return 1;
-		},
-		'init': function() {
-			this.desu = !!$id('de-main'); // Dollchan extension
-		},
-		'scan': function() {
-			function isHidden(elem) {
-				for(var currentParent = val.parentNode; currentParent.tagName != 'BODY'; currentParent = currentParent.parentNode) {
-					if($hasClass(currentParent, 'de-post-hid') || currentParent.style.display == 'none') {
-						return true;
-					}
-				}
-				return false;
-			}
-			var temp = $Q(qImgLink, doc);
-			for(var i = 0, n = temp.length; i < n; i++) {
-				var val = temp[i];
-				var image = val.href;
-				var t = null, thumb = null, p = null, post = null;
-				// Dollchan: post is hidden
-				if(this.desu && settings.desuPostHide && isHidden(val))
-					continue;
-				if($hasClass(val.parentNode, this.aib.cFileInfo)) {
-					continue;
-				}
-				t = $q('img', val);
-				if(!!t) {
-					thumb = t.src;
-					if(this.aib.krau || this.aib.fch) {
-						p = $q('blockquote', val.parentNode.parentNode);
-					} else {
-						p = val.nextElementSibling;
-						while(p && p.tagName != 'BLOCKQUOTE') {
-							p = p.nextElementSibling;
-						}
-					}
-				} else {
-					p = val.parentNode;
-				}
-				if(p) post = $clearHTML(p.innerHTML);
-				addSlide(image, thumb, post, val);
-			}
+			var temp = $Q('img.attach', doc);
+            for (var i = 0, n = temp.length; i < n; i++) {
+                var cur = temp[i];
+                var image = cur.src;
+                var thumb = image;
+                image = image.replace('_thumb','');
+                addSlide(image, thumb, "", cur);
+                cur = null;
+                image = null;
+                thumb = null;
+            }
 			scanOver();
 		}
 	},
