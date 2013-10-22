@@ -1643,6 +1643,7 @@ function addListeners() {
 ==============================================================================*/
 
 function doScript() {
+	if (window.top === window.self){
 	for(var i = 0; i < PROFILES.length; i++) {
 		var p = PROFILES[i];
 		var result = p.test();
@@ -1702,6 +1703,7 @@ function doScript() {
 	addElements();
 	addListeners();
 	loadSettings();
+	}
 }
 
 /*==============================================================================
