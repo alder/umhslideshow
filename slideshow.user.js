@@ -5,8 +5,8 @@
 // @description Adds slideshow to news.hobby.net.ua forum. Forked from https://github.com/qmhQTqiGh8AGfqYkNyP7/UniversalSlideshow.
 // @icon        https://raw.github.com/alder/umhslideshow/master/Icon.png
 // @updateURL   https://raw.github.com/alder/umhslideshow/master/slideshow.user.js
-// @include     http://*
-// @include     https://*
+// @include     http://news.hobby.net.ua/*
+// @include     https://news.hobby.net.ua/*
 // ==/UserScript==
 
 (function(scriptStorage) {
